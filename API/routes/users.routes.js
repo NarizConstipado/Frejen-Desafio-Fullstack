@@ -4,19 +4,16 @@ const userController = require('../controllers/users.controller.js')
 const authController = require('../controllers/auth.controller.js')
 
 router.route('/')
-        .get(userController.findAll)
-        .post(userController.create)
+        .get(authController.verifyToken, userController.findAll)
+        .post(authController.verifyToken, userController.create)
 
 router.route('/login')
         .post(userController.login)
-
-// meter departamento no token
-// authController.verifyToken, 
         
 router.route('/:userId')
-        .get(userController.findOneById)
-//         .delete(userController.delete)
-        .put(userController.edit)
+        .get(authController.verifyToken, userController.findOneById)
+        .delete(authController.verifyToken, userController.delete)
+        .put(authController.verifyToken, userController.edit)
 
 //export this router
 module.exports = router;

@@ -8,26 +8,17 @@ exports.verifyToken = (req, res, next) => {
     return res.status(401).json({ success: false, msg: "No token provided!" });
   try {
     let decoded = jwt.verify(header, config.SECRET);
-    req.loggedUser = { id: decoded.id, admin: decoded.admin }; // save user ID and role into request object
+    req.loggedUser = {
+      id: decoded.id,
+      admin: decoded.admin,
+      id_department: decoded.id_department,
+    }; // save user ID and role into request object
     next();
   } catch (err) {
-    return res
-      .status(500)
-      .json({ success: false, msg: "Failed to authenticate token." });
-  }
-};
-
-exports.autheticationNotNeeded = (req, res, next) => {
-  try {
-    const header = req.headers["x-access-token"] || req.headers.authorization;
-    if (!!header) {
-      let decoded = jwt.verify(header, config.SECRET);
-      req.loggedUser = { id: decoded.id, admin: decoded.admin }; // save user ID and role into request object
-    }
-    next();
-  } catch (err) {
-    return res
-      .status(500)
-      .json({ success: false, msg: "Failed to authenticate token." });
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      msg: err.message || "Failed to authenticate token.",
+    });
   }
 };

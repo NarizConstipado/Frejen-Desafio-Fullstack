@@ -6,6 +6,8 @@ const User = db.user;
 const Department = db.department;
 const { Op } = require("sequelize");
 
+// tem que ter filtro no findByUser, pelo estado e texto
+
 exports.login = async (req, res) => {
   try {
     if (!req.body || !req.body.email || !req.body.password)
