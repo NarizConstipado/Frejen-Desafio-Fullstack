@@ -23,8 +23,8 @@ exports.findAll = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    // if (req.loggedUser.role != "admin")
-    //   return res.status(403).json({ error: "You do not have permission" });
+    if (req.loggedUser.role != "admin")
+      return res.status(403).json({ error: "You do not have permission" });
 
     if (!req.body.name && typeof req.body.name != "string") {
       res
