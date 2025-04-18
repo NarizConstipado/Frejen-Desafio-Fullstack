@@ -55,8 +55,8 @@ exports.login = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    // if (req.loggedUser.role != "admin")
-    //   return res.status(403).json({ error: "You do not have permission" });
+    if (req.loggedUser.role != "admin")
+      return res.status(403).json({ error: "You do not have permission" });
 
     if (!req.body.name && typeof req.body.name != "string") {
       res
@@ -118,15 +118,15 @@ exports.create = async (req, res) => {
 
 exports.edit = async (req, res) => {
   try {
-    // if (req.loggedUser.role != "admin")
-    //   return res.status(403).json({ error: "You do not have permission" });
+    if (req.loggedUser.role != "admin")
+      return res.status(403).json({ error: "You do not have permission" });
 
-    // if (req.loggedUser.id == req.params.userId) {
-    //   res.status(401).json({
-    //     succes: false,
-    //     msg: `You are not allowed to update this user`,
-    //   });
-    // }
+    if (req.loggedUser.id == req.params.userId) {
+      res.status(401).json({
+        succes: false,
+        msg: `You are not allowed to update this user`,
+      });
+    }
 
     let user = await User.findByPk(req.params.userId);
     if (user == undefined) {
@@ -217,23 +217,23 @@ exports.delete = async (req, res) => {
         sucess: false,
         msg: `User not found`,
       });
-    } else {
-      if (req.loggedUser.role == "admin") {
-        User.destroy({
-          where: { id: req.params.userId },
-        });
-
-        res.status(200).json({
-          sucess: true,
-          msg: `User ${user.username} deleted successfully`,
-        });
-      } else {
-        res.status(403).json({
-          success: false,
-          msg: `You do not have permission to delete this user.`,
-        });
-      }
     }
+
+    if (req.loggedUser.role != "admin") {
+      res.status(403).json({
+        success: false,
+        msg: `You do not have permission to delete this user.`,
+      });
+    }
+
+    User.destroy({
+      where: { id: req.params.userId },
+    });
+
+    res.status(200).json({
+      sucess: true,
+      msg: `User ${user.username} deleted successfully`,
+    });
   } catch (err) {
     res.status(500).json({
       success: false,

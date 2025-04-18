@@ -7,7 +7,6 @@ exports.findAll = async (req, res) => {
     let result = await State.findAll({ order: [["createdAt"]] });
     res.status(200).json(result);
   } catch (err) {
-    console.log(err);
     res.status(500).json({
       sucess: false,
       msg: err.message || "Some error occurred while finding states.",
@@ -17,8 +16,8 @@ exports.findAll = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    // if (req.loggedUser.role != "admin")
-    //   return res.status(403).json({ error: "You do not have permission" });
+    if (req.loggedUser.role != "admin")
+      return res.status(403).json({ error: "You do not have permission" });
 
     let state = {};
     if (!req.body.title) res.status(400).json({ error: "Title is required" });
@@ -43,8 +42,9 @@ exports.create = async (req, res) => {
 
 exports.edit = async (req, res) => {
   try {
-    // if (req.loggedUser.role != "admin")
-    //   res.status(403).json({ error: "You do not have permission" });
+    if (req.loggedUser.role != "admin")
+      res.status(403).json({ error: "You do not have permission" });
+
     let state = await State.findByPk(req.params.stateId);
     if (!state)
       res
@@ -73,8 +73,8 @@ exports.edit = async (req, res) => {
 
 exports.delete = async (req, res) => {
   try {
-    // if (req.loggedUser.role != "admin")
-    //   res.status(403).json({ error: "You do not have permission" });
+    if (req.loggedUser.role != "admin")
+      res.status(403).json({ error: "You do not have permission" });
 
     const state = await State.findOne({
       where: { id: req.params.stateId },

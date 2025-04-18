@@ -4,13 +4,7 @@ const { Op } = require("sequelize");
 
 exports.findAll = async (req, res) => {
   try {
-    let result;
-
-    if (false) {
-      // Needs to be logged in
-    } else {
-      result = await Department.findAll({ order: [["createdAt"]] });
-    }
+    let result = await Department.findAll({ order: [["createdAt"]] });
     res.status(200).json(result);
   } catch (err) {
     console.log(err);
@@ -23,8 +17,8 @@ exports.findAll = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    // if (req.loggedUser.role != "admin")
-    //   return res.status(403).json({ error: "You do not have permission" });
+    if (req.loggedUser.role != "admin")
+      return res.status(403).json({ error: "You do not have permission" });
 
     let department = {};
     if (!req.body.title) res.status(400).json({ error: "Title is required" });
@@ -50,8 +44,9 @@ exports.create = async (req, res) => {
 
 exports.edit = async (req, res) => {
   try {
-    // if (req.loggedUser.role != "admin")
-    //   res.status(403).json({ error: "You do not have permission" });
+    if (req.loggedUser.role != "admin")
+      res.status(403).json({ error: "You do not have permission" });
+
     let department = await Department.findByPk(req.params.departmentId);
     if (!department)
       res
@@ -80,8 +75,9 @@ exports.edit = async (req, res) => {
 
 exports.delete = async (req, res) => {
   try {
-    // if (req.loggedUser.role != "admin")
-    //   res.status(403).json({ error: "You do not have permission" });
+    if (req.loggedUser.role != "admin")
+      res.status(403).json({ error: "You do not have permission" });
+
     const department = await Department.findOne({
       where: { id: req.params.departmentId },
     });

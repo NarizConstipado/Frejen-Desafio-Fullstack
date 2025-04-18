@@ -18,12 +18,12 @@ app.get('/', function (req, res) {
 
 // routing middleware
 app.use('/users', require('./routes/users.routes.js'))
-// app.use('/tickets', require('./routes/users.routes.js'))
+app.use('/tickets', require('./routes/tickets.routes.js'))
 app.use('/states', require('./routes/states.routes.js'))
 app.use('/departments', require('./routes/departments.routes.js'))
 
 // handle invalid routes
-// app.get('*', function (req, res) {
+// app.get('/*', function (req, res) {
 //     res.status(404).json({ message: 'The path especified could not be found' });
 // })
 

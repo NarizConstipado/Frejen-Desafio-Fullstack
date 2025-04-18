@@ -1,56 +1,22 @@
-const jwt = require("jsonwebtoken"); //JWT tokens creation (sign())
-const bcrypt = require("bcryptjs"); //password encryption
-const config = require("../config/config");
 const db = require("../models/index.js");
+const Ticket = db.ticket;
 const User = db.user;
 const Department = db.department;
+const State = db.state;
 const { Op } = require("sequelize");
 
 // tem que ter filtro no findByUser, pelo estado e texto
 
-exports.login = async (req, res) => {
+exports.findAll = async (req, res) => {
   try {
-    if (!req.body || !req.body.email || !req.body.password)
-      return res.status(400).json({
-        success: false,
-        msg: "Must provide an email, and a password.",
-      });
-
-    const user = await User.findOne({
-      where: { email: req.body.email },
-      attributes: ["id", "email", "password", "admin", "id_department"],
+    let tickets = await Ticket.findAll({
+      include: [Department, State, User],
     });
-
-    if (!user)
-      return res.status(401).json({
-        success: false,
-        accessToken: null,
-        msg: "Invalid credentials!",
-      });
-
-    let token = false;
-    if (user.verifyPassword(req.body.password, user.password)) {
-      token = jwt.sign(
-        { id: user.id, admin: user.admin, department: user.id_department },
-        config.SECRET,
-        {
-          expiresIn: "24h", // 24 hours
-        }
-      );
-    }
-
-    if (!token)
-      return res.status(401).json({
-        success: false,
-        accessToken: null,
-        msg: "Invalid credentials!",
-      });
-    // sign the given payload (user ID, admin and department) into a JWT payload – builds JWT token, using secret key
-    res.status(200).json({ success: true, accessToken: token });
+    res.status(200).json(tickets);
   } catch (err) {
     res.status(500).json({
       success: false,
-      msg: err.message || "Some error occurred at login.",
+      msg: err.message || "Some error occurred while finding all tickets.",
     });
   }
 };
@@ -162,25 +128,6 @@ exports.edit = async (req, res) => {
       succes: true,
       msg: `User ${user.id} updated successfully`,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      msg: err.message || "Some error occurred while creating a new user.",
-    });
-  }
-};
-
-exports.findAll = async (req, res) => {
-  try {
-    let users = await User.findAll({
-      attributes: ["id", "name", "email", "admin"],
-      include: [
-        {
-          model: Department,
-        },
-      ],
-    });
-    res.status(200).json(users);
   } catch (err) {
     res.status(500).json({
       success: false,
