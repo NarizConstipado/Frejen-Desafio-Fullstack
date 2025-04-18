@@ -21,172 +21,188 @@ exports.findAll = async (req, res) => {
   }
 };
 
+exports.findOneById = async (req, res) => {
+  try {
+    let ticket = await Ticket.findOne({
+      include: [Department, State, User],
+    });
+    if (!ticket)
+      res.status(404).json({ error: `User Id ${req.params.ticketId} not found` });
+
+    res.status(200).json(ticket);
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      msg: err.message || `Some error occurred while finding ticket ${req.params.ticketId}.`,
+    });
+  }
+};
+
 exports.create = async (req, res) => {
   try {
-    if (req.loggedUser.role != "admin")
+    if (req.loggedUser.admin == false)
       return res.status(403).json({ error: "You do not have permission" });
 
-    if (!req.body.name && typeof req.body.name != "string") {
+    if (!req.body.title && typeof req.body.title != "string") {
       res
         .status(400)
-        .json({ success: false, msg: "Name must be a valid string" });
+        .json({ success: false, msg: "title must be a valid string" });
       return;
     }
-    if (!req.body.email && typeof req.body.email != "string") {
+    if (!req.body.description && typeof req.body.description != "string") {
       res
         .status(400)
-        .json({ success: false, msg: "Email must be a valid string" });
+        .json({ success: false, msg: "description must be a valid string" });
       return;
     }
 
+    // check if user exists
+    if (!req.body.created_by && typeof req.body.created_by != "integer") {
+      res
+        .status(400)
+        .json({ success: false, msg: "created_by must be a valid integer" });
+      return;
+    }
+    const user = await User.findByPk(req.body.created_by);
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "created_by must be a valid User" });
+    }
+
+    // check id department exists
     if (!req.body.id_department && typeof req.body.id_department != "integer") {
       res
         .status(400)
-        .json({ success: false, msg: "Department must be a valid integer" });
+        .json({ success: false, msg: "id_department must be a valid integer" });
       return;
     }
-
-    if (!req.body.password && typeof req.body.password != "string") {
-      res
-        .status(400)
-        .json({ success: false, msg: "Password must be a valid string" });
-      return;
-    }
-
-    // Find all departments, check if value is valid
     const department = await Department.findByPk(req.body.id_department);
-
     if (!department) {
       return res
         .status(400)
-        .json({ success: false, msg: "Department not found" });
+        .json({ success: false, msg: "id_department must be a valid integer" });
     }
 
-    req.body.password = bcrypt.hashSync(req.body.password, 10);
-    let newUser = await User.create(req.body);
+    // check id state exists
+    if (!req.body.id_state && typeof req.body.id_state != "integer") {
+      res
+        .status(400)
+        .json({ success: false, msg: "id_state must be a valid integer" });
+      return;
+    }
+    const state = await State.findByPk(req.body.id_state);
+    if (!state) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "id_state must be a valid State" });
+    }
+
+    let newTicket = await Ticket.create(req.body);
     res.status(201).json({
       sucess: true,
-      msg: `User created successfully`,
-      URL: `/users/${newUser.id}`,
+      msg: `Ticket created successfully`,
+      URL: `/tickets/${newTicket.id}`,
     });
   } catch (err) {
-    if (err.name == "SequelizeUniqueConstraintError") {
-      res.status(409).json({
-        success: false,
-        msg: `${err.errors[0].path} already exist`,
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        msg: err.message || "Some error occurred while creating a new user.",
-      });
-    }
+    res.status(500).json({
+      success: false,
+      msg: err.message || "Some error occurred while creating a new ticket.",
+    });
   }
 };
 
 exports.edit = async (req, res) => {
   try {
-    // if (req.loggedUser.role != "admin")
-    //   return res.status(403).json({ error: "You do not have permission" });
-
-    // if (req.loggedUser.id == req.params.userId) {
-    //   res.status(401).json({
-    //     succes: false,
-    //     msg: `You are not allowed to update this user`,
-    //   });
-    // }
-
-    let user = await User.findByPk(req.params.userId);
-    if (user == undefined) {
+    let ticket = await ticket.findByPk(req.params.ticketId);
+    if (ticket == undefined) {
       res.status(404).json({
         sucess: false,
-        msg: `User not found`,
+        msg: `Ticket ${req.params.ticketId} not found`,
       });
       return;
     }
 
-    if (req.body.name) user.name = req.body.name;
+    // If ticket state is "Recusado" or "Finished"
+    if (ticket.state == "Recusado" || "Finished")
+      res.status(400).json({
+        succes: false,
+        msg: `This ticket cannot be edited`
+      })
 
-    if (req.body.email) user.email = req.body.email;
+    if (req.body.title) ticket.title = req.body.title;
 
-    if (req.body.password)
-      user.password = bcrypt.hashSync(req.body.password, 10);
+    if (req.body.description) ticket.description = req.body.description;
+    
+    // If "Recusado" then, the "obeservacoes" needs to be filled
+    if (!req.body.observacoes && req.body.state == "Recusado")
+    if (req.body.observacoes)
+      ticket.observacoes = req.body.observacoes;
 
+    // id_department
     if (req.body.id_department) {
       const department = await Department.findByPk(req.body.id_department);
       if (!department) {
         return res
           .status(400)
-          .json({ success: false, msg: "Department not found" });
+          .json({ success: false, msg: `Department ${req.body.id_department} not found` });
       }
-      user.id_department = req.body.id_department;
+      ticket.id_department = req.body.id_department;
     }
 
-    await user.save();
+    // id_state
+    if (req.body.id_state) {
+      const state = await State.findByPk(req.body.id_state);
+      if (!state) {
+        return res
+          .status(400)
+          .json({ success: false, msg: `State ${req.body.id_state} not found` });
+      }
+      ticket.id_state = req.body.id_state;
+    }
+
+    // updated_by
+    ticket.updated_by = req.loggedUser.id;
+
+    await ticket.save();
 
     res.status(202).json({
       succes: true,
-      msg: `User ${user.id} updated successfully`,
+      msg: `Ticket ${ticket.id} updated successfully`,
     });
   } catch (err) {
     res.status(500).json({
       success: false,
-      msg: err.message || "Some error occurred while creating a new user.",
-    });
-  }
-};
-
-exports.findOneById = async (req, res) => {
-  try {
-    let user = await User.findOne({
-      attributes: ["id", "name", "email", "admin"],
-      where: {
-        id: req.params.userId,
-      },
-      include: [{ model: Department }],
-    });
-
-    if (!user) {
-      res.status(404).json({ error: `User Id ${req.params.userId} not found` });
-    } else res.status(200).json(user);
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      msg: err.message || "Some error occurred while creating a new user.",
+      msg: err.message || "Some error occurred while updating a ticket.",
     });
   }
 };
 
 exports.delete = async (req, res) => {
   try {
-    let user = await User.findByPk(req.params.userId);
+    if (req.loggedUser.admin == false)
+      res.status(403).json({ error: "You do not have permission" });
 
-    if (user == undefined || user == null) {
+    let ticket = await Ticket.findByPk(req.params.ticketId);
+    if (ticket == undefined || ticket == null) {
       res.status(404).json({
         sucess: false,
-        msg: `User not found`,
+        msg: `Ticket ${req.params.ticketId} not found`,
       });
-    } else {
-      if (req.loggedUser.role == "admin") {
-        User.destroy({
-          where: { id: req.params.userId },
-        });
-
-        res.status(200).json({
-          sucess: true,
-          msg: `User ${user.username} deleted successfully`,
-        });
-      } else {
-        res.status(403).json({
-          success: false,
-          msg: `You do not have permission to delete this user.`,
-        });
-      }
     }
+
+    Ticket.destroy({
+      where: { id: req.params.ticketId },
+    });
+
+    res.status(200).json({
+      sucess: true,
+      msg: `Ticket ${req.params.ticketId} deleted successfully`,
+    });
   } catch (err) {
     res.status(500).json({
       success: false,
-      msg: err.message || "Some error occurred while creating a new user.",
+      msg: err.message || "Some error occurred while deleting a ticket.",
     });
   }
 };

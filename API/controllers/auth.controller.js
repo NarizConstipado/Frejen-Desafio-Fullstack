@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken"); //JWT tokens creation (sign())
+const jwt = require("jsonwebtoken");
 const config = require("../config/config.js");
 
 exports.verifyToken = (req, res, next) => {
@@ -12,7 +12,7 @@ exports.verifyToken = (req, res, next) => {
       id: decoded.id,
       admin: decoded.admin,
       id_department: decoded.id_department,
-    }; // save user ID and role into request object
+    }; // save user ID, admin status and user's department ID into request object
     next();
   } catch (err) {
     console.log(err);

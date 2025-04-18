@@ -4,7 +4,7 @@ const { Op } = require("sequelize");
 
 exports.findAll = async (req, res) => {
   try {
-    let result = await State.findAll({ order: [["createdAt"]] });
+    let result = await State.findAll();
     res.status(200).json(result);
   } catch (err) {
     res.status(500).json({
@@ -14,18 +14,35 @@ exports.findAll = async (req, res) => {
   }
 };
 
+exports.findOneById = async (req, res) => {
+  try {
+    let state = await State.findByPk(req.params.stateId);
+    if (!state)
+      res
+        .status(404)
+        .json({ error: `State Id ${req.params.stateId} not found` });
+    res.status(200).json(state);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      sucess: false,
+      msg:
+        err.message ||
+        `Some error occurred while finding state ${req.params.stateId}.`,
+    });
+  }
+};
+
 exports.create = async (req, res) => {
   try {
-    if (req.loggedUser.role != "admin")
+    if (req.loggedUser.admin == false)
       return res.status(403).json({ error: "You do not have permission" });
 
-    let state = {};
-    if (!req.body.title) res.status(400).json({ error: "Title is required" });
+    if (!req.body.title) res.status(400).json({ error: "title is required" });
     else if (typeof req.body.title != "string")
-      res.status(400).json({ error: "name must be a string" });
-    else state.title = req.body.title;
+      res.status(400).json({ error: "title must be a string" });
 
-    let newState = await State.create(state);
+    let newState = await State.create(req.body);
     res.status(201).json({
       sucess: true,
       msg: `State created successfully`,
@@ -42,7 +59,7 @@ exports.create = async (req, res) => {
 
 exports.edit = async (req, res) => {
   try {
-    if (req.loggedUser.role != "admin")
+    if (req.loggedUser.admin == false)
       res.status(403).json({ error: "You do not have permission" });
 
     let state = await State.findByPk(req.params.stateId);
@@ -51,15 +68,13 @@ exports.edit = async (req, res) => {
         .status(404)
         .json({ error: `State Id ${req.params.stateId} not found` });
 
-    let updateState = {};
     if (req.body.title && typeof req.body.title != "string")
       res.status(400).json({ error: "title must be a string" });
-    else updateState.title = req.body.title;
 
-    await State.update(updateState, { where: { id: state.id } });
+    await State.update(req.body, { where: { id: state.id } });
     res
       .status(200)
-      .json({ msg: `State ${state.id} was successfully changed!` });
+      .json({ msg: `State ${state.id} updated successfully` });
   } catch (err) {
     console.log(err);
     res.status(500).json({
@@ -73,7 +88,7 @@ exports.edit = async (req, res) => {
 
 exports.delete = async (req, res) => {
   try {
-    if (req.loggedUser.role != "admin")
+    if (req.loggedUser.admin == false)
       res.status(403).json({ error: "You do not have permission" });
 
     const state = await State.findOne({
@@ -81,7 +96,7 @@ exports.delete = async (req, res) => {
     });
     await state.destroy({ where: { id: req.params.stateId } });
     res.status(200).json({
-      msg: `State ${req.params.stateId} was successfully deleted!`,
+      msg: `State ${req.params.stateId} deleted successfully`,
     });
   } catch (err) {
     res.status(500).json({
@@ -89,25 +104,6 @@ exports.delete = async (req, res) => {
       msg:
         err.message ||
         `Some error occurred while deleting state ${req.params.stateId}.`,
-    });
-  }
-};
-
-exports.findOneById = async (req, res) => {
-  try {
-    let state = await State.findByPk(req.params.stateId);
-    if (!state) {
-      res
-        .status(404)
-        .json({ error: `State Id ${req.params.stateId} not found` });
-    } else res.status(200).json(state);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({
-      sucess: false,
-      msg:
-        err.message ||
-        `Some error occurred while finding state ${req.params.stateId}.`,
     });
   }
 };

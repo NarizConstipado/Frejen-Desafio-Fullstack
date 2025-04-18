@@ -4,7 +4,7 @@ const { Op } = require("sequelize");
 
 exports.findAll = async (req, res) => {
   try {
-    let result = await Department.findAll({ order: [["createdAt"]] });
+    let result = await Department.findAll();
     res.status(200).json(result);
   } catch (err) {
     console.log(err);
@@ -15,18 +15,35 @@ exports.findAll = async (req, res) => {
   }
 };
 
+exports.findOneById = async (req, res) => {
+  try {
+    let department = await Department.findByPk(req.params.departmentId);
+    if (!department)
+      res
+        .status(404)
+        .json({ error: `Department Id ${req.params.departmentId} not found` });
+    res.status(200).json(department);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      sucess: false,
+      msg:
+        err.message ||
+        `Some error occurred while finding department ${req.params.departmentId}.`,
+    });
+  }
+};
+
 exports.create = async (req, res) => {
   try {
-    if (req.loggedUser.role != "admin")
+    if (req.loggedUser.admin == false)
       return res.status(403).json({ error: "You do not have permission" });
 
-    let department = {};
-    if (!req.body.title) res.status(400).json({ error: "Title is required" });
+    if (!req.body.title) res.status(400).json({ error: "title is required" });
     else if (typeof req.body.title != "string")
-      res.status(400).json({ error: "name must be a string" });
-    else department.title = req.body.title;
+      res.status(400).json({ error: "title must be a string" });
 
-    let newDepartment = await Department.create(department);
+    let newDepartment = await Department.create(req.body);
     res.status(201).json({
       sucess: true,
       msg: `Department created successfully`,
@@ -44,7 +61,7 @@ exports.create = async (req, res) => {
 
 exports.edit = async (req, res) => {
   try {
-    if (req.loggedUser.role != "admin")
+    if (req.loggedUser.admin == false)
       res.status(403).json({ error: "You do not have permission" });
 
     let department = await Department.findByPk(req.params.departmentId);
@@ -61,7 +78,7 @@ exports.edit = async (req, res) => {
     await Department.update(updateDepartment, { where: { id: department.id } });
     res
       .status(200)
-      .json({ msg: `Department ${department.id} was changed successfully` });
+      .json({ msg: `Department ${department.id} updated successfully` });
   } catch (err) {
     console.log(err);
     res.status(500).json({
@@ -75,7 +92,7 @@ exports.edit = async (req, res) => {
 
 exports.delete = async (req, res) => {
   try {
-    if (req.loggedUser.role != "admin")
+    if (req.loggedUser.admin == false)
       res.status(403).json({ error: "You do not have permission" });
 
     const department = await Department.findOne({
@@ -83,7 +100,7 @@ exports.delete = async (req, res) => {
     });
     await department.destroy({ where: { id: req.params.departmentId } });
     res.status(200).json({
-      msg: `Department ${req.params.departmentId} was successfully deleted!`,
+      msg: `Department ${req.params.departmentId} deleted successfully`,
     });
   } catch (err) {
     res.status(500).json({
@@ -91,25 +108,6 @@ exports.delete = async (req, res) => {
       msg:
         err.message ||
         `Some error occurred while deleting department ${req.params.departmentId}.`,
-    });
-  }
-};
-
-exports.findOneById = async (req, res) => {
-  try {
-    let department = await Department.findByPk(req.params.departmentId);
-    if (!department) {
-      res
-        .status(404)
-        .json({ error: `Department Id ${req.params.departmentId} not found` });
-    } else res.status(200).json(department);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({
-      sucess: false,
-      msg:
-        err.message ||
-        `Some error occurred while finding department ${req.params.departmentId}.`,
     });
   }
 };
