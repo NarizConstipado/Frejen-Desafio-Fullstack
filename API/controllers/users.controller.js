@@ -4,7 +4,6 @@ const config = require("../config/config");
 const db = require("../models/index.js");
 const User = db.user;
 const Department = db.department;
-const { Op } = require("sequelize");
 
 // Reusable attributes
 const departmentAttributes = ["id", "title"];

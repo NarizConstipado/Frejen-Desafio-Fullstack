@@ -3,7 +3,7 @@ const Ticket = db.ticket;
 const User = db.user;
 const Department = db.department;
 const State = db.state;
-const { Op, where } = require("sequelize");
+const { Op } = require("sequelize");
 
 // Array of States that cannot be edited (3-Recusado, 5-Finalizado)
 const statesNotEditable = [3, 5];
@@ -21,48 +21,42 @@ const departmentAttributes = ["id", "title"];
 const stateAttributes = ["id", "title"];
 const userAttributes = ["id", "name", "email"];
 
-// tem que ter filtro no findByUser, pelo estado e texto
 exports.findByUser = async (req, res) => {
   try {
-    // Define search parameters based on user role and request parameters
-    const { search = "", states } = req.query;
-    let whereConditions = [];
+    const page = parseInt(req.query.page) - 1 || 0;
+    const limit = parseInt(req.query.limit) || 5;
+    const search = req.query.search?.trim() || null;
+    const state = req.query.id_state || null;
 
-    // Text search (in title or description, expects ?search=abc...)
-    if (search.trim() !== "") {
-      whereConditions.push({
-        [Op.or]: [
-          where(fn("LOWER", col("ticket.title")), {
-            [Op.like]: `%${loweredSearch}%`,
-          }),
-          where(fn("LOWER", col("ticket.description")), {
-            [Op.like]: `%${loweredSearch}%`,
-          }),
-        ],
-      });
-    }
+    const whereClause = {};
 
-    // State filter (expects ?states=1,2,3)
-    if (states && states.length > 0) {
-      whereConditions.push({ id_state: { [Op.in]: states } });
-    }
-
+    // Admin users have no restrictions, but non-admin users need filters
     if (!req.loggedUser.admin) {
-      whereConditions.push({
-        [Op.or]: [
-          { created_by: req.loggedUser.id },
-          { updated_by: req.loggedUser.id },
-          { id_department: req.loggedUser.id_department },
-        ],
-      });
+      whereClause[Op.or] = [
+        { created_by: req.loggedUser.id },
+        { updated_by: req.loggedUser.id },
+        { id_department: req.loggedUser.id_department },
+      ];
     }
 
-    const finalWhere = whereConditions.length
-      ? { [Op.and]: whereConditions }
-      : {};
+    // Only include search if it's not empty
+    if (search) {
+      whereClause[Op.or] = [
+        { title: { [Op.like]: `%${search}%` } },
+        { description: { [Op.like]: `%${search}%` } },
+      ];
+    }
 
-    let tickets = await Ticket.findAll({
-      where: finalWhere,
+    // Only include state if it's defined
+    if (state) {
+      const stateIds = state.split(",").map(Number);
+      whereClause.id_state = { [Op.in]: stateIds };
+    }
+
+    const tickets = await Ticket.findAll({
+      where: whereClause,
+      offset: page * limit,
+      limit,
       attributes: {
         exclude: excludeAttributes,
       },
@@ -76,10 +70,8 @@ exports.findByUser = async (req, res) => {
 
     res.status(200).json(tickets);
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      msg: err.message || "Some error occurred while finding all tickets.",
-    });
+    console.log(err);
+    res.status(500).json({ error: true, message: "Internal Server Error" });
   }
 };
 

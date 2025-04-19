@@ -1,6 +1,5 @@
 const db = require("../models/index");
 const State = db.state;
-const { Op } = require("sequelize");
 
 exports.findAll = async (req, res) => {
   try {
