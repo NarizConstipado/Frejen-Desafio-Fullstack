@@ -6,6 +6,9 @@ const User = db.user;
 const Department = db.department;
 const { Op } = require("sequelize");
 
+// Reusable attributes
+const departmentAttributes = ["id", "title"];
+
 exports.login = async (req, res) => {
   try {
     if (!req.body || !req.body.email || !req.body.password)
@@ -60,6 +63,7 @@ exports.findAll = async (req, res) => {
       include: [
         {
           model: Department,
+          attributes: departmentAttributes,
         },
       ],
     });
@@ -79,7 +83,7 @@ exports.findOneById = async (req, res) => {
       where: {
         id: req.params.userId,
       },
-      include: [{ model: Department }],
+      include: [{ model: Department, attributes: departmentAttributes }],
     });
 
     if (!user)
@@ -121,9 +125,10 @@ exports.create = async (req, res) => {
     // check if id department exists
     const department = await Department.findByPk(req.body.id_department);
     if (!department) {
-      return res
-        .status(400)
-        .json({ success: false, msg: "id_department must be a valid Department" });
+      return res.status(400).json({
+        success: false,
+        msg: "id_department must be a valid Department",
+      });
     }
 
     if (!req.body.password && typeof req.body.password != "string") {
@@ -172,9 +177,10 @@ exports.edit = async (req, res) => {
     if (req.body.id_department) {
       const department = await Department.findByPk(req.body.id_department);
       if (!department) {
-        return res
-          .status(404)
-          .json({ success: false, msg: `Department Id ${req.body.id_department} not found` });
+        return res.status(404).json({
+          success: false,
+          msg: `Department Id ${req.body.id_department} not found`,
+        });
       }
       user.id_department = req.body.id_department;
     }
@@ -212,7 +218,7 @@ exports.delete = async (req, res) => {
 
     res.status(200).json({
       sucess: true,
-      msg: `User ${user.username} deleted successfully`,
+      msg: `User ${req.params.userId} deleted successfully`,
     });
   } catch (err) {
     res.status(500).json({

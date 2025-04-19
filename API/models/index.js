@@ -27,9 +27,9 @@ db.department.hasMany(db.ticket, { foreignKey: "id_department" });
 db.ticket.belongsTo(db.department, { foreignKey: "id_department" });
 
 // //alias
-db.ticket.belongsTo(db.user, { foreignKey: "created_by" });
+db.ticket.belongsTo(db.user, { foreignKey: "created_by", as: "createdBy" });
 
-db.ticket.belongsTo(db.user, { foreignKey: "updated_by" });
+db.ticket.belongsTo(db.user, { foreignKey: "updated_by", as: "updatedBy" });
 
 // (async () => {
 //   try {

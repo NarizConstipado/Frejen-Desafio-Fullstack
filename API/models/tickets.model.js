@@ -17,9 +17,13 @@ module.exports = (sequelize, DataTypes) => {
     observacoes: {
       type: DataTypes.STRING,
       validate: {
-        notEmpty: { msg: `Please provide a description!` },
+        isOptional(value) {
+          if (value !== null && value !== undefined && value.trim() === "") {
+            throw new Error("observacoes must not be an empty string");
+          }
+        },
       },
-      allowNull: false,
+      allowNull: true,
     },
   });
   return ticket;
