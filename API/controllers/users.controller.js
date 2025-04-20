@@ -32,7 +32,7 @@ exports.login = async (req, res) => {
     if (user.verifyPassword(req.body.password, user.password)) {
       // sign the given payload (user ID, admin and department id) into a JWT payload – builds JWT token, using secret key
       token = jwt.sign(
-        { id: user.id, admin: user.admin, department: user.id_department },
+        { id: user.id, admin: user.admin, id_department: user.id_department },
         config.SECRET,
         {
           expiresIn: "24h",
@@ -86,7 +86,9 @@ exports.findOneById = async (req, res) => {
     });
 
     if (!user)
-      res.status(404).json({ error: `User Id ${req.params.userId} not found` });
+      return res
+        .status(404)
+        .json({ error: `User Id ${req.params.userId} not found` });
 
     res.status(200).json(user);
   } catch (err) {
@@ -102,40 +104,33 @@ exports.create = async (req, res) => {
     if (req.loggedUser.admin == false)
       return res.status(403).json({ error: "You do not have permission" });
 
-    if (!req.body.name && typeof req.body.name != "string") {
-      res
+    if (!req.body.name && typeof req.body.name != "string")
+      return res
         .status(400)
         .json({ success: false, msg: "Name must be a valid string" });
-      return;
-    }
-    if (!req.body.email && typeof req.body.email != "string") {
-      res
+
+    if (!req.body.email && typeof req.body.email != "string")
+      return res
         .status(400)
         .json({ success: false, msg: "Email must be a valid string" });
-      return;
-    }
 
-    if (!req.body.id_department && typeof req.body.id_department != "integer") {
-      res
+    if (!req.body.id_department && typeof req.body.id_department != "integer")
+      return res
         .status(400)
         .json({ success: false, msg: "id_department must be a valid integer" });
-      return;
-    }
+
     // check if id department exists
     const department = await Department.findByPk(req.body.id_department);
-    if (!department) {
+    if (!department)
       return res.status(400).json({
         success: false,
         msg: "id_department must be a valid Department",
       });
-    }
 
-    if (!req.body.password && typeof req.body.password != "string") {
-      res
+    if (!req.body.password && typeof req.body.password != "string")
+      return res
         .status(400)
         .json({ success: false, msg: "password must be a valid string" });
-      return;
-    }
 
     req.body.password = bcrypt.hashSync(req.body.password, 10);
     let newUser = await User.create(req.body);
@@ -158,13 +153,11 @@ exports.edit = async (req, res) => {
       return res.status(403).json({ error: "You do not have permission" });
 
     let user = await User.findByPk(req.params.userId);
-    if (user == undefined) {
-      res.status(404).json({
+    if (user == undefined)
+      return res.status(404).json({
         sucess: false,
         msg: `User Id ${req.params.userId} not found`,
       });
-      return;
-    }
 
     if (req.body.name) user.name = req.body.name;
 
@@ -175,12 +168,12 @@ exports.edit = async (req, res) => {
 
     if (req.body.id_department) {
       const department = await Department.findByPk(req.body.id_department);
-      if (!department) {
+      if (!department)
         return res.status(404).json({
           success: false,
           msg: `Department Id ${req.body.id_department} not found`,
         });
-      }
+
       user.id_department = req.body.id_department;
     }
 
@@ -201,15 +194,14 @@ exports.edit = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     if (req.loggedUser.admin == false)
-      res.status(403).json({ error: "You do not have permission" });
+      return res.status(403).json({ error: "You do not have permission" });
 
     let user = await User.findByPk(req.params.userId);
-    if (user == undefined || user == null) {
+    if (user == undefined || user == null)
       res.status(404).json({
         sucess: false,
         msg: `User not found`,
       });
-    }
 
     User.destroy({
       where: { id: req.params.userId },

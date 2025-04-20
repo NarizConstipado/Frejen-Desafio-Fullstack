@@ -54,8 +54,8 @@ export const updateUser = async (data) => {
 };
 
 // GET: Get Tickets
-export const getTickets = async () => {
-  const url = `${API_BASE_URL}/tickets`;
+export const getTickets = async ({ page, limit }) => {
+  const url = `${API_BASE_URL}/tickets?page=${page}&limit=${limit}`;
   return makeRequest("get", url);
 };
 

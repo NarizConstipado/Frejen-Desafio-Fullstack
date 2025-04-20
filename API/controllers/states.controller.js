@@ -17,7 +17,7 @@ exports.findOneById = async (req, res) => {
   try {
     let state = await State.findByPk(req.params.stateId);
     if (!state)
-      res
+      returnres
         .status(404)
         .json({ error: `State Id ${req.params.stateId} not found` });
     res.status(200).json(state);
@@ -37,9 +37,10 @@ exports.create = async (req, res) => {
     if (req.loggedUser.admin == false)
       return res.status(403).json({ error: "You do not have permission" });
 
-    if (!req.body.title) res.status(400).json({ error: "title is required" });
+    if (!req.body.title)
+      return res.status(400).json({ error: "title is required" });
     else if (typeof req.body.title != "string")
-      res.status(400).json({ error: "title must be a string" });
+      return res.status(400).json({ error: "title must be a string" });
 
     let newState = await State.create(req.body);
     res.status(201).json({
@@ -59,21 +60,19 @@ exports.create = async (req, res) => {
 exports.edit = async (req, res) => {
   try {
     if (req.loggedUser.admin == false)
-      res.status(403).json({ error: "You do not have permission" });
+      return res.status(403).json({ error: "You do not have permission" });
 
     let state = await State.findByPk(req.params.stateId);
     if (!state)
-      res
+      return res
         .status(404)
         .json({ error: `State Id ${req.params.stateId} not found` });
 
     if (req.body.title && typeof req.body.title != "string")
-      res.status(400).json({ error: "title must be a string" });
+      return res.status(400).json({ error: "title must be a string" });
 
     await State.update(req.body, { where: { id: state.id } });
-    res
-      .status(200)
-      .json({ msg: `State ${state.id} updated successfully` });
+    res.status(200).json({ msg: `State ${state.id} updated successfully` });
   } catch (err) {
     console.log(err);
     res.status(500).json({
@@ -88,7 +87,7 @@ exports.edit = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     if (req.loggedUser.admin == false)
-      res.status(403).json({ error: "You do not have permission" });
+      return res.status(403).json({ error: "You do not have permission" });
 
     const state = await State.findOne({
       where: { id: req.params.stateId },

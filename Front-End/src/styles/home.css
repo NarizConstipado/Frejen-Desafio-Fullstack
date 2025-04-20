@@ -1,0 +1,5 @@
+.tickets-container {
+  padding-top: 8rem;
+  height: 85vh;
+  /* overflow-y: scroll; */
+}

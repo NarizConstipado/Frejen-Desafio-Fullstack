@@ -18,7 +18,7 @@ exports.findOneById = async (req, res) => {
   try {
     let department = await Department.findByPk(req.params.departmentId);
     if (!department)
-      res
+      return res
         .status(404)
         .json({ error: `Department Id ${req.params.departmentId} not found` });
     res.status(200).json(department);
@@ -40,7 +40,7 @@ exports.create = async (req, res) => {
 
     if (!req.body.title) res.status(400).json({ error: "title is required" });
     else if (typeof req.body.title != "string")
-      res.status(400).json({ error: "title must be a string" });
+      return res.status(400).json({ error: "title must be a string" });
 
     let newDepartment = await Department.create(req.body);
     res.status(201).json({
@@ -50,7 +50,7 @@ exports.create = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
-    res.status(500).json({
+    return res.status(500).json({
       sucess: false,
       msg:
         err.message || "Some error occurred while creating a new department.",
@@ -61,17 +61,17 @@ exports.create = async (req, res) => {
 exports.edit = async (req, res) => {
   try {
     if (req.loggedUser.admin == false)
-      res.status(403).json({ error: "You do not have permission" });
+      return res.status(403).json({ error: "You do not have permission" });
 
     let department = await Department.findByPk(req.params.departmentId);
     if (!department)
-      res
+      return res
         .status(404)
         .json({ error: `Department Id ${req.params.departmentId} not found` });
 
     let updateDepartment = {};
     if (req.body.title && typeof req.body.title != "string")
-      res.status(400).json({ error: "title must be a string" });
+      return res.status(400).json({ error: "title must be a string" });
     else updateDepartment.title = req.body.title;
 
     await Department.update(updateDepartment, { where: { id: department.id } });
@@ -92,7 +92,7 @@ exports.edit = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     if (req.loggedUser.admin == false)
-      res.status(403).json({ error: "You do not have permission" });
+      return res.status(403).json({ error: "You do not have permission" });
 
     const department = await Department.findOne({
       where: { id: req.params.departmentId },

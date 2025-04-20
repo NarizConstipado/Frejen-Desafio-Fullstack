@@ -23,31 +23,31 @@ function Perfil() {
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const getInfo = async () => {
+    if (loading) return;
+    setLoading(true);
+
+    try {
+      const loggedUser = await currentUser(token);
+      let user = await getUserById(loggedUser.id);
+      let departments = await getDepartments();
+      setDepartments(departments);
+      setUserData({
+        id: user.id,
+        name: user.name || "",
+        id_department: user.department.id || "",
+      });
+
+      setDisplayName(user.name);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      if (loading) return;
-      setLoading(true);
-
-      try {
-        const loggedUser = await currentUser(token);
-        let user = await getUserById(loggedUser.id);
-        let departments = await getDepartments();
-        setDepartments(departments);
-        setUserData({
-          id: user.id,
-          name: user.name || "",
-          id_department: user.department.id || "",
-        });
-
-        setDisplayName(user.name);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    getInfo();
   }, []);
 
   const handleInputChange = (event) => {
