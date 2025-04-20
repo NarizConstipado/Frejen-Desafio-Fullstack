@@ -52,3 +52,15 @@ export const updateUser = async (data) => {
   const url = `${API_BASE_URL}/users/${data.id}`;
   return makeRequest("put", url, data);
 };
+
+// GET: Get Tickets
+export const getTickets = async () => {
+  const url = `${API_BASE_URL}/tickets`;
+  return makeRequest("get", url);
+};
+
+// GET: Get Tickets
+export const getTicket = async (id) => {
+  const url = `${API_BASE_URL}/tickets/${id}`;
+  return makeRequest("get", url);
+};

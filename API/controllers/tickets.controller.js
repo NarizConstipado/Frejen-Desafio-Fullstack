@@ -14,8 +14,6 @@ const excludeAttributes = [
   "id_department",
   "created_by",
   "updated_by",
-  "createdAt",
-  "updatedAt",
 ];
 const departmentAttributes = ["id", "title"];
 const stateAttributes = ["id", "title"];
@@ -58,7 +56,7 @@ exports.findByUser = async (req, res) => {
       offset: page * limit,
       limit,
       attributes: {
-        exclude: excludeAttributes,
+        exclude: [excludeAttributes, "created_by", "updated_by", "description", "obeservacoes"],
       },
       include: [
         { model: Department, attributes: departmentAttributes },

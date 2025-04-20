@@ -10,7 +10,6 @@ import Ticket from "../pages/Ticket";
 import Perfil from "../pages/Profile";
 import Login from "../pages/Login";
 import NotFound from "../components/404NotFound";
-import Dashboard from "../pages/Dashboard";
 
 function AntimationRoutes() {
   const location = useLocation();
@@ -24,12 +23,12 @@ function AntimationRoutes() {
         <Routes location={location} key={location.pathname}>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<RequireAuth />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/profile" element={<Perfil />} />
-            {/*
             <Route path="/" element={<Home />} />
+            <Route path="/profile" element={<Perfil />} />
+            <Route path="/tickets/:id" element={<Ticket />} />
+            {/*
             <Route path="/create_tickets" element={<CreateTickets />} />
-            <Route path="/tickets/:id" element={<Ticket />} /> */}
+            */}
           </Route>
           {/* 404 route for general site */}
           <Route path="*" element={<NotFound />} />

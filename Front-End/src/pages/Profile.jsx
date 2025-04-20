@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import {
   getUserById,
   getDepartments,
@@ -17,11 +16,12 @@ function Perfil() {
     password: "",
   });
   const token = localStorage.getItem("token");
+  // Display required for user name not being updated as the user is writing
+  const [displayName, setDisplayName] = useState("");
   const [departments, setDepartments] = useState([]);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,6 +38,8 @@ function Perfil() {
           name: user.name || "",
           id_department: user.department.id || "",
         });
+
+        setDisplayName(user.name);
       } catch (err) {
         console.error("Error fetching data:", err);
       } finally {
@@ -91,7 +93,7 @@ function Perfil() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.3 } }}
     >
-      {!loading ? <h1>Welcome, {userData.name}</h1> : <h1>Loading...</h1>}
+      {!loading ? <h1>Welcome, {displayName}</h1> : <h1>Loading...</h1>}
       {error && <p style={{ color: "red" }}>{error}</p>}
       {success && <p style={{ color: "green" }}>{success}</p>}
       <form id="profile-form" onSubmit={handleSubmit}>
