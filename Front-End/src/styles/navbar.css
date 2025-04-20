@@ -1,0 +1,147 @@
+/* Header and navigation styling */
+#header {
+  text-transform: uppercase;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: inherit;
+}
+
+#navbarRoot {
+  width: 100%;
+  padding-top: 1rem;
+  text-align: center;
+  background-color: #1f1f1f;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 999;
+}
+
+@media (min-width: 1140px) {
+  #header {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+  }
+}
+
+#name {
+  font-weight: 700;
+  font-style: normal;
+  font-size: 30px;
+}
+
+#navigation {
+  display: flex;
+  justify-content: flex-start;
+  justify-self: flex-start;
+  align-items: center;
+}
+
+#navigation p {
+  margin-left: 20px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.selectedNavigation {
+  font-weight: 700;
+  color: #e94f37;
+}
+
+/* Burger menu icon styling */
+#burger-menu {
+  z-index: 1100; /* Always on top */
+  position: absolute;
+  right: 2%;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+#burgerContainer {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.burger {
+  width: 25px;
+  height: 4px;
+  background-color: #e2e2e2;
+  border-radius: 10px; /* Add this line for rounded ends */
+  transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
+}
+
+/* Burger menu open/close transformations */
+.burger.open:nth-child(1) {
+  transform: rotate(45deg) translate(6.3px, 6.3px);
+}
+
+.burger.open:nth-child(2) {
+  opacity: 0;
+}
+
+.burger.open:nth-child(3) {
+  transform: rotate(-45deg) translate(6.3px, -6.3px);
+}
+
+/* Mobile navigation menu (overlay) */
+#mobile-menu {
+  z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(31, 31, 31, 0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+  padding-top: 10rem;
+}
+
+#mobile-menu.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+#mobile-menu a p {
+  margin-top: 0px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+/* Media query for small screens (burger menu) */
+@media (max-width: 1139px) {
+  #navigation {
+    display: none;
+  }
+
+  #burgerContainer {
+    display: flex;
+  }
+
+  #header {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #name {
+    font-size: 25px;
+    text-align: center;
+  }
+}
+
+/* Burger open/close animation */
+.burger {
+  transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
+}
+
+.link {
+  color: #e2e2e2;
+  text-decoration: none;
+}

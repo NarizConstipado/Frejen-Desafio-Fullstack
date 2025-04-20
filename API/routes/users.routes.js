@@ -6,9 +6,6 @@ const authController = require('../controllers/auth.controller.js')
 router.route('/')
         .get(authController.verifyToken, userController.findAll)
         .post(authController.verifyToken, userController.create)
-
-router.route('/login')
-        .post(userController.login)
         
 router.route('/:userId')
         .get(authController.verifyToken, userController.findOneById)

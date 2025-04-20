@@ -220,7 +220,7 @@ exports.edit = async (req, res) => {
     // If ticket state is "Recusado" or "Finished"
     if (statesNotEditable.includes(ticket.id_state))
       res.status(400).json({
-        succes: false,
+        success: false,
         msg: `This ticket cannot be edited`,
       });
 
@@ -267,7 +267,7 @@ exports.edit = async (req, res) => {
     await ticket.save();
 
     res.status(202).json({
-      succes: true,
+      success: true,
       msg: `Ticket ${ticket.id} updated successfully`,
     });
   } catch (err) {

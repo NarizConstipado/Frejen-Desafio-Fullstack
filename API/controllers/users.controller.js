@@ -187,7 +187,7 @@ exports.edit = async (req, res) => {
     await user.save();
 
     res.status(202).json({
-      succes: true,
+      success: true,
       msg: `User ${user.id} updated successfully`,
     });
   } catch (err) {
