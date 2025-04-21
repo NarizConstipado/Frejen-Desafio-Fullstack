@@ -68,7 +68,6 @@ button:focus-visible {
   }
 }
 
-/* content-container */
 .content-container {
   display: flex;
   flex-direction: column;
@@ -76,5 +75,3 @@ button:focus-visible {
   justify-content: center;
   height: 100vh;
 }
-
-/* 404 error page */

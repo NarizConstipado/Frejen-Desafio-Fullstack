@@ -1,0 +1,32 @@
+#create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+#create-form label {
+  font-size: 20px;
+  font-weight: bold;
+  font-style: italic;
+  display: flex;
+  justify-content: space-between;
+}
+
+#create-form input,
+textarea {
+  font-size: 16px;
+  width: 70%;
+}
+
+#create-form div {
+  display: flex;
+  justify-content: space-between;
+}
+
+#create-form div label {
+  width: 45%;
+}
+
+#create-form div select {
+  width: 65%;
+}

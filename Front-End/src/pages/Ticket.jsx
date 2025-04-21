@@ -13,7 +13,9 @@ function Ticket() {
   const [ticket, setTicket] = useState({});
 
   const getTicketData = async () => {
-    if (loading) return;
+    if (loading) {
+      return;
+    }
     setLoading(true);
 
     try {
@@ -55,10 +57,12 @@ function Ticket() {
               Created at: {formatDate(ticket?.createdAt)} by:{" "}
               {ticket?.createdBy?.name}
             </p>
-            <p>
-              Updated at: {formatDate(ticket?.updatedAt)} by:{" "}
-              {ticket?.updatedBy?.name}
-            </p>
+            {ticket.updatedBy && (
+              <p>
+                Updated at: {formatDate(ticket?.updatedAt)} by:{" "}
+                {ticket?.updatedBy?.name}
+              </p>
+            )}
             {ticket.observacoes && (
               <div>
                 <p>Observations:</p>

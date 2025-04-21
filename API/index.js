@@ -8,10 +8,9 @@ const host = process.env.HOST;
 
 const userController = require("./controllers/users.controller.js");
 
-app.use(express.json()); //enable parsing JSON body data
+app.use(express.json());
 app.use(cors({ origin: "http://localhost:5173" }));
 
-// root route -- /api/
 app.get("/", function (req, res) {
   res.status(200).json({
     message: `home -- Desafio FullStack api`,
@@ -28,10 +27,9 @@ app.use("/states", require("./routes/states.routes.js"));
 app.use("/departments", require("./routes/departments.routes.js"));
 
 // handle invalid routes
-// app.get('/*', function (req, res) {
-//     res.status(404).json({ message: 'The path especified could not be found' });
-// })
-
+app.all(/.*/, function (req, res) {
+  res.status(404).json({ message: "The path specified could not be found" });
+});
 const server = app.listen(port, host, () =>
   console.log(`App listening at http://${host}:${port}/`)
 );

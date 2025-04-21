@@ -1,5 +1,10 @@
 const db = require("../models/index");
 const Department = db.department;
+const {
+  checkAdminPermission,
+  notFound,
+  badRequest,
+} = require("../utilities/validation");
 
 exports.findAll = async (req, res) => {
   try {
@@ -17,10 +22,7 @@ exports.findAll = async (req, res) => {
 exports.findOneById = async (req, res) => {
   try {
     let department = await Department.findByPk(req.params.departmentId);
-    if (!department)
-      return res
-        .status(404)
-        .json({ error: `Department Id ${req.params.departmentId} not found` });
+    notFound(req, res, department, req.params.departmentId);
     res.status(200).json(department);
   } catch (err) {
     console.log(err);
@@ -35,12 +37,13 @@ exports.findOneById = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    if (req.loggedUser.admin == false)
-      return res.status(403).json({ error: "You do not have permission" });
+    if (!checkAdminPermission(req, res)) return;
 
-    if (!req.body.title) res.status(400).json({ error: "title is required" });
-    else if (typeof req.body.title != "string")
+    if (!req.body.title) {
+      res.status(400).json({ error: "title is required" });
+    } else if (typeof req.body.title != "string") {
       return res.status(400).json({ error: "title must be a string" });
+    }
 
     let newDepartment = await Department.create(req.body);
     res.status(201).json({
@@ -60,26 +63,18 @@ exports.create = async (req, res) => {
 
 exports.edit = async (req, res) => {
   try {
-    if (req.loggedUser.admin == false)
-      return res.status(403).json({ error: "You do not have permission" });
+    if (!checkAdminPermission(req, res)) return;
 
     let department = await Department.findByPk(req.params.departmentId);
-    if (!department)
-      return res
-        .status(404)
-        .json({ error: `Department Id ${req.params.departmentId} not found` });
+    notFound(req, res, department, req.params.departmentId);
 
-    let updateDepartment = {};
-    if (req.body.title && typeof req.body.title != "string")
-      return res.status(400).json({ error: "title must be a string" });
-    else updateDepartment.title = req.body.title;
+    isValid(req, res, req.body?.title, "title", "string");
 
-    await Department.update(updateDepartment, { where: { id: department.id } });
+    await Department.update(req.body, { where: { id: department.id } });
     res
       .status(200)
       .json({ msg: `Department ${department.id} updated successfully` });
   } catch (err) {
-    console.log(err);
     res.status(500).json({
       sucess: false,
       msg:
@@ -91,12 +86,11 @@ exports.edit = async (req, res) => {
 
 exports.delete = async (req, res) => {
   try {
-    if (req.loggedUser.admin == false)
-      return res.status(403).json({ error: "You do not have permission" });
+    if (!checkAdminPermission(req, res)) return;
 
-    const department = await Department.findOne({
-      where: { id: req.params.departmentId },
-    });
+    const department = await Department.findByPk(req.params.departmentId);
+    notFound(req, res, department, req.params.departmentId);
+
     await department.destroy({ where: { id: req.params.departmentId } });
     res.status(200).json({
       msg: `Department ${req.params.departmentId} deleted successfully`,

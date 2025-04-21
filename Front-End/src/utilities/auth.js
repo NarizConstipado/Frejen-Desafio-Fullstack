@@ -1,20 +1,22 @@
 import { jwtDecode } from "jwt-decode";
 
 export const isAuthenticated = () => {
-  return !!localStorage.getItem("token"); // Check if the token exists
+  return !!localStorage.getItem("token");
 };
 
 export const isTokenExpired = (token) => {
-  if (!token) return true; // No token means it's expired or not valid
+  if (!token) {
+    return true;
+  }
 
   try {
-    const { exp } = jwtDecode(token); // Decode token to get expiration time
+    const { exp } = jwtDecode(token);
     if (Date.now() >= exp * 1000) {
-      return true; // If token has expired
+      return true;
     }
-    return false; // Token is still valid
+    return false;
   } catch (error) {
-    return true; // If decoding fails, treat it as expired
+    return true;
   }
 };
 

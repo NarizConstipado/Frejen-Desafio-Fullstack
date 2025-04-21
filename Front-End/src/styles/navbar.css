@@ -1,4 +1,3 @@
-/* Header and navigation styling */
 #header {
   text-transform: uppercase;
   display: flex;
@@ -52,7 +51,7 @@
 
 /* Burger menu icon styling */
 #burger-menu {
-  z-index: 1100; /* Always on top */
+  z-index: 1100;
   position: absolute;
   right: 2%;
   top: 50%;
@@ -70,7 +69,7 @@
   width: 25px;
   height: 4px;
   background-color: #e2e2e2;
-  border-radius: 10px; /* Add this line for rounded ends */
+  border-radius: 10px;
   transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
 }
 

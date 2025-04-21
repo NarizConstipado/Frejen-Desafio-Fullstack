@@ -4,7 +4,7 @@ import "../styles/NavBar.css";
 
 const navItems = [
   { path: "/", label: "Home" },
-  { path: "/tickets", label: "Create Ticket" },
+  { path: "/create-tickets", label: "Create Ticket" },
   { path: "/profile", label: "User" },
 ];
 
@@ -15,7 +15,7 @@ function NavBar() {
 
   useEffect(() => {
     setActivePath(location.pathname);
-    setIsMenuOpen(false); // Close mobile menu on route change
+    setIsMenuOpen(false);
   }, [location.pathname]);
 
   const handleNavLinkClick = (path) => {
@@ -37,7 +37,9 @@ function NavBar() {
               to={item.path}
               onClick={() => handleNavLinkClick(item.path)}
             >
-              <p className={activePath === item.path ? "selectedNavigation" : ""}>
+              <p
+                className={activePath === item.path ? "selectedNavigation" : ""}
+              >
                 {item.label}
               </p>
             </Link>
@@ -55,7 +57,7 @@ function NavBar() {
           </div>
         </div>
       </div>
-      {/* Mobile Menu Overlay */}
+      {/* smaller screen menu overlay */}
       <div id="mobile-menu" className={isMenuOpen ? "open" : ""}>
         {navItems.map((item) => (
           <Link
@@ -64,7 +66,7 @@ function NavBar() {
             to={item.path}
             onClick={() => {
               handleNavLinkClick(item.path);
-              setIsMenuOpen(false); // Close menu after clicking
+              setIsMenuOpen(false);
             }}
           >
             <p className={activePath === item.path ? "selectedNavigation" : ""}>

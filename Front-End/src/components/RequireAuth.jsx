@@ -1,23 +1,21 @@
-// src/components/RequireAuth.jsx
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import {
-  isAuthenticated as checkAuth,
-  isTokenExpired,
-} from "../utilities/auth"; // Import your auth utilities
+import { isTokenExpired } from "../utilities/auth";
+import { useAuth } from "../contexts/AuthContext"; // adjust if path differs
 
 const RequireAuth = () => {
   const location = useLocation();
-  const token = localStorage.getItem("token");
-  const isAuth = checkAuth(); // Check if a token exists
+  const { token, logoutUser } = useAuth();
 
-  if (!isAuth || (token && isTokenExpired(token))) {
-    // If not authenticated or the token is expired, redirect to login
-    localStorage.removeItem("token"); // Optionally remove the expired token
+  const activeToken = token || localStorage.getItem("token");
+
+  const isLoggedIn = !!activeToken && !isTokenExpired(activeToken);
+
+  if (!isLoggedIn) {
+    logoutUser(); // this clears context + localStorage
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // If authenticated and the token is valid, render the child routes
   return <Outlet />;
 };
 

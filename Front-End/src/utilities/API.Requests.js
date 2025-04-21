@@ -5,7 +5,7 @@ const API_BASE_URL = "http://127.0.0.1:3000";
 // Utility function for axios requests
 const makeRequest = async (method, url, data = {}, params = {}) => {
   try {
-    const token = localStorage.getItem("token"); // Retrieve token from local storage
+    const token = localStorage.getItem("token");
 
     const headers = {
       ...(token ? { Authorization: token } : {}),
@@ -28,22 +28,17 @@ const makeRequest = async (method, url, data = {}, params = {}) => {
   }
 };
 
+// USERS
 // POST: Login
 export const login = async (email, password) => {
-  const url = `${API_BASE_URL}/login`; // Update the URL to match your backend endpoint
+  const url = `${API_BASE_URL}/login`;
   const data = { email, password };
   return makeRequest("post", url, data);
 };
 
-// GET: User By Id
+// GET: UserById
 export const getUserById = async (userId) => {
   const url = `${API_BASE_URL}/users/${userId}`;
-  return makeRequest("get", url);
-};
-
-// GET: Get Departments
-export const getDepartments = async () => {
-  const url = `${API_BASE_URL}/departments`;
   return makeRequest("get", url);
 };
 
@@ -53,9 +48,34 @@ export const updateUser = async (data) => {
   return makeRequest("put", url, data);
 };
 
+// DEPARTMENTS
+// GET: Get Departments
+export const getDepartments = async () => {
+  const url = `${API_BASE_URL}/departments`;
+  return makeRequest("get", url);
+};
+
+// STATES
+// GET: Get States
+export const getStates = async () => {
+  const url = `${API_BASE_URL}/states`;
+  return makeRequest("get", url);
+};
+
+// TICKETS
 // GET: Get Tickets
-export const getTickets = async ({ page, limit }) => {
-  const url = `${API_BASE_URL}/tickets?page=${page}&limit=${limit}`;
+export const getTickets = async ({ page, limit, search, id_state }) => {
+  const params = new URLSearchParams();
+  params.append("page", page);
+  params.append("limit", limit);
+  if (search) {
+    params.append("search", search);
+  }
+  if (id_state && id_state.length > 0) {
+    params.append("id_state", id_state.join(","));
+  }
+
+  const url = `${API_BASE_URL}/tickets?${params.toString()}`;
   return makeRequest("get", url);
 };
 
@@ -63,4 +83,10 @@ export const getTickets = async ({ page, limit }) => {
 export const getTicket = async (id) => {
   const url = `${API_BASE_URL}/tickets/${id}`;
   return makeRequest("get", url);
+};
+
+// POST: Create Ticket
+export const createTicket = async (data) => {
+  const url = `${API_BASE_URL}/tickets`;
+  return makeRequest("post", url, data);
 };

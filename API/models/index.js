@@ -1,4 +1,4 @@
-console.clear(); // Clear the console before running
+console.clear();
 require("dotenv").config();
 
 const { Sequelize, DataTypes } = require("sequelize");
@@ -26,7 +26,7 @@ db.ticket.belongsTo(db.state, { foreignKey: "id_state" });
 db.department.hasMany(db.ticket, { foreignKey: "id_department" });
 db.ticket.belongsTo(db.department, { foreignKey: "id_department" });
 
-// //alias
+//alias
 db.ticket.belongsTo(db.user, { foreignKey: "created_by", as: "createdBy" });
 
 db.ticket.belongsTo(db.user, { foreignKey: "updated_by", as: "updatedBy" });

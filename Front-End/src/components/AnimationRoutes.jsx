@@ -1,4 +1,3 @@
-// src/components/AntimationRoutes.jsx
 import React from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
@@ -26,9 +25,7 @@ function AntimationRoutes() {
             <Route path="/" element={<Home />} />
             <Route path="/profile" element={<Perfil />} />
             <Route path="/tickets/:id" element={<Ticket />} />
-            {/*
-            <Route path="/create_tickets" element={<CreateTickets />} />
-            */}
+            <Route path="/create-tickets" element={<CreateTickets />} />
           </Route>
           {/* 404 route for general site */}
           <Route path="*" element={<NotFound />} />

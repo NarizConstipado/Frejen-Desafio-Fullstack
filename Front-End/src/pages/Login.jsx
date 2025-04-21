@@ -1,8 +1,8 @@
-// src/pages/Login.jsx
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { login } from "../utilities/API.Requests"; // Ensure this is pointing to your API request function
+import { login } from "../utilities/API.Requests";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 import "../styles/login.css";
 
@@ -11,6 +11,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { loginUser } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -22,10 +23,10 @@ const Login = () => {
       const response = await login(email, password);
 
       if (response && response.accessToken) {
-        localStorage.setItem("token", response.accessToken);
+        loginUser(response.accessToken);
         navigate("/");
       } else if (response && response.message) {
-        setError(response.message); // Use the message from the backend error
+        setError(response.message);
       } else {
         setError("Login failed due to an unexpected error.");
       }

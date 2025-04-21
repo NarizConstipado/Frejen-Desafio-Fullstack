@@ -1,10 +1,13 @@
 import { BrowserRouter } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
 import AntimationRoutes from "./components/AnimationRoutes";
 
 function App() {
   return (
     <BrowserRouter>
-      <AntimationRoutes />
+      <AuthProvider>
+        <AntimationRoutes />
+      </AuthProvider>
     </BrowserRouter>
   );
 }

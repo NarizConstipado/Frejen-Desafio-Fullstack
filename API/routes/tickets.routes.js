@@ -15,5 +15,4 @@ router.route('/:ticketId')
         .delete(authController.verifyToken, ticketController.delete)
         .put(authController.verifyToken, ticketController.edit)
 
-//export this router
 module.exports = router;

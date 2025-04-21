@@ -24,7 +24,9 @@ function Perfil() {
   const [loading, setLoading] = useState(false);
 
   const getInfo = async () => {
-    if (loading) return;
+    if (loading) {
+      return;
+    }
     setLoading(true);
 
     try {
@@ -62,11 +64,13 @@ function Perfil() {
     e.preventDefault();
     setError(null);
     setSuccess(null);
-    setLoading(true); // Set loading to true when the request starts
+    setLoading(true);
 
     try {
       let newUser = {};
-      if (userData.password != "") newUser.password = userData.password;
+      if (userData.password != "") {
+        newUser.password = userData.password;
+      }
       newUser.name = userData.name;
       newUser.id_department = userData.id_department;
 
@@ -82,7 +86,7 @@ function Perfil() {
     } catch (err) {
       setError(err.message || "Failed to connect to the server.");
     } finally {
-      setLoading(false); // Set loading back to false when the request finishes
+      setLoading(false);
     }
   };
 

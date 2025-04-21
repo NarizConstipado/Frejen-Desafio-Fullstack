@@ -12,5 +12,4 @@ router.route('/:userId')
         .delete(authController.verifyToken, userController.delete)
         .put(authController.verifyToken, userController.edit)
 
-//export this router
 module.exports = router;

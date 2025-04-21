@@ -6,10 +6,6 @@
 
 #ticketBody {
   display: grid;
-  grid-template-areas:
-    "description stateDepartment"
-    "CreatedBy UpdatedBy"
-    "Observations Observations";
   grid-template-columns: 1fr 0.4fr;
   grid-column-gap: 30px;
 }

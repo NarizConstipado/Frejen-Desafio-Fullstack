@@ -1,5 +1,10 @@
 const db = require("../models/index");
 const State = db.state;
+const {
+  checkAdminPermission,
+  notFound,
+  badRequest,
+} = require("../utilities/validation");
 
 exports.findAll = async (req, res) => {
   try {
@@ -16,10 +21,8 @@ exports.findAll = async (req, res) => {
 exports.findOneById = async (req, res) => {
   try {
     let state = await State.findByPk(req.params.stateId);
-    if (!state)
-      returnres
-        .status(404)
-        .json({ error: `State Id ${req.params.stateId} not found` });
+    notFound(req, res, state, req.params.stateId);
+
     res.status(200).json(state);
   } catch (err) {
     console.log(err);
@@ -34,13 +37,9 @@ exports.findOneById = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    if (req.loggedUser.admin == false)
-      return res.status(403).json({ error: "You do not have permission" });
+    if (!checkAdminPermission(req, res)) return;
 
-    if (!req.body.title)
-      return res.status(400).json({ error: "title is required" });
-    else if (typeof req.body.title != "string")
-      return res.status(400).json({ error: "title must be a string" });
+    badRequest(req, res, req.body.title, "title", "string");
 
     let newState = await State.create(req.body);
     res.status(201).json({
@@ -49,7 +48,6 @@ exports.create = async (req, res) => {
       URL: `/states/${newState.id}`,
     });
   } catch (err) {
-    console.log(err);
     res.status(500).json({
       sucess: false,
       msg: err.message || "Some error occurred while creating a new state.",
@@ -59,22 +57,16 @@ exports.create = async (req, res) => {
 
 exports.edit = async (req, res) => {
   try {
-    if (req.loggedUser.admin == false)
-      return res.status(403).json({ error: "You do not have permission" });
+    if (!checkAdminPermission(req, res)) return;
 
     let state = await State.findByPk(req.params.stateId);
-    if (!state)
-      return res
-        .status(404)
-        .json({ error: `State Id ${req.params.stateId} not found` });
+    notFound(req, res, state, req.params.stateId);
 
-    if (req.body.title && typeof req.body.title != "string")
-      return res.status(400).json({ error: "title must be a string" });
+    isValid(req, res, req.body?.title, "title", "string");
 
     await State.update(req.body, { where: { id: state.id } });
     res.status(200).json({ msg: `State ${state.id} updated successfully` });
   } catch (err) {
-    console.log(err);
     res.status(500).json({
       sucess: false,
       msg:
@@ -86,12 +78,11 @@ exports.edit = async (req, res) => {
 
 exports.delete = async (req, res) => {
   try {
-    if (req.loggedUser.admin == false)
-      return res.status(403).json({ error: "You do not have permission" });
+    if (!checkAdminPermission(req, res)) return;
 
-    const state = await State.findOne({
-      where: { id: req.params.stateId },
-    });
+    const state = await State.findByPk(req.params.stateId);
+    notFound(req, res, state, req.params.stateId);
+
     await state.destroy({ where: { id: req.params.stateId } });
     res.status(200).json({
       msg: `State ${req.params.stateId} deleted successfully`,

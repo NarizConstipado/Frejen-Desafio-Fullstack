@@ -3,7 +3,13 @@ const Ticket = db.ticket;
 const User = db.user;
 const Department = db.department;
 const State = db.state;
-const { Op, where } = require("sequelize");
+const { Op } = require("sequelize");
+const {
+  checkAdminPermission,
+  notFound,
+  badRequest,
+  isValid,
+} = require("../utilities/validation");
 
 // Array of States that cannot be edited (3-Recusado, 5-Finalizado)
 const statesNotEditable = [3, 5];
@@ -28,7 +34,6 @@ exports.findByUser = async (req, res) => {
 
     const whereClause = {};
 
-    // Admin users have no restrictions, but non-admin users need filters
     if (!req.loggedUser.admin) {
       whereClause[Op.or] = [
         { created_by: req.loggedUser.id },
@@ -37,7 +42,6 @@ exports.findByUser = async (req, res) => {
       ];
     }
 
-    // Only include search if it's not empty
     if (search != undefined && search != null && search != "") {
       whereClause[Op.or] = [
         { title: { [Op.like]: `%${search}%` } },
@@ -45,7 +49,6 @@ exports.findByUser = async (req, res) => {
       ];
     }
 
-    // Only include state if it's defined
     if (state) {
       const stateIds = state.split(",").map(Number);
       whereClause.id_state = { [Op.in]: stateIds };
@@ -98,8 +101,7 @@ exports.findAll = async (req, res) => {
 
 exports.findOneById = async (req, res) => {
   try {
-    let ticket = await Ticket.findOne({
-      where: { id: req.params.ticketId },
+    let ticket = await Ticket.findByPk(req.params.ticketId, {
       attributes: {
         exclude: excludeAttributes,
       },
@@ -110,10 +112,7 @@ exports.findOneById = async (req, res) => {
         { model: User, as: "updatedBy", attributes: userAttributes },
       ],
     });
-    if (!ticket)
-      return res
-        .status(404)
-        .json({ error: `User Id ${req.params.ticketId} not found` });
+    notFound(req, res, ticket, req.params.ticketId);
 
     res.status(200).json(ticket);
   } catch (err) {
@@ -128,44 +127,34 @@ exports.findOneById = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    if (!req.body.title && typeof req.body.title != "string")
-      return res
-        .status(400)
-        .json({ success: false, msg: "title must be a valid string" });
+    badRequest(req, res, req.body.title, "title", "string");
 
-    if (!req.body.description && typeof req.body.description != "string")
-      return res
-        .status(400)
-        .json({ success: false, msg: "description must be a valid string" });
+    badRequest(req, res, req.body.description, "description", "string");
+
+    if (req.body.observacoes != null) {
+      badRequest(req, res, req.body.observacoes, "observacoes", "string");
+    }
 
     // check id department exists
-    if (!req.body.id_department && typeof req.body.id_department != "integer")
-      return res
-        .status(400)
-        .json({ success: false, msg: "id_department must be a valid integer" });
+    badRequest(req, res, req.body.id_department, "id_department", "integer");
 
     const department = await Department.findByPk(req.body.id_department);
-    if (!department)
-      return res
-        .status(400)
-        .json({ success: false, msg: "id_department must be a valid integer" });
+    if (!department) {
+      return res.status(400).json({
+        success: false,
+        msg: "id_department must be a valid Department",
+      });
+    }
 
     // check id state exists
-    if (!req.body.id_state && typeof req.body.id_state != "integer")
-      return res
-        .status(400)
-        .json({ success: false, msg: "id_state must be a valid integer" });
+    badRequest(req, res, req.body.id_state, "id_state", "integer");
 
     const state = await State.findByPk(req.body.id_state);
-    if (!state)
+    if (!state) {
       return res
         .status(400)
         .json({ success: false, msg: "id_state must be a valid State" });
-
-    if (req.body.observacoes != null && typeof req.body.description != "string")
-      return res
-        .status(400)
-        .json({ success: false, msg: "observacoes must be a valid string" });
+    }
 
     // check if user exists
     const user = await User.findByPk(req.loggedUser.id);
@@ -193,60 +182,67 @@ exports.create = async (req, res) => {
 exports.edit = async (req, res) => {
   try {
     let ticket = await Ticket.findByPk(req.params.ticketId);
-    if (ticket == undefined)
-      return res.status(404).json({
-        sucess: false,
-        msg: `Ticket ${req.params.ticketId} not found`,
-      });
+
+    notFound(req, res, ticket, req.params.ticketId);
 
     // If ticket state is "Recusado" or "Finished"
-    if (statesNotEditable.includes(ticket.id_state))
+    if (statesNotEditable.includes(ticket.id_state)) {
       return res.status(400).json({
         success: false,
         msg: `This ticket cannot be edited`,
       });
+    }
 
     // If "Recusado", id 3, then, the "obeservacoes" needs to be filled
     if (
       req.body.observacoes == null &&
       (ticket.id_state == "3" || req.body.id_state == 3)
-    )
+    ) {
       return res.status(400).json({
         success: false,
         msg: `If new state is "Recusado", Observacoes must be filled`,
       });
+    }
 
-    if (req.body.title) ticket.title = req.body.title;
+    isValid(req, res, req.body?.title, "title", "string");
+    if (req.body.title) {
+      ticket.title = req.body.title;
+    }
 
-    if (req.body.description) ticket.description = req.body.description;
+    isValid(req, res, req.body?.description, "description", "string");
+    if (req.body.description) {
+      ticket.description = req.body.description;
+    }
 
-    if (req.body.observacoes) ticket.observacoes = req.body.observacoes;
+    isValid(req, res, req.body?.observacoes, "observacoes", "string");
+    if (req.body.observacoes) {
+      ticket.observacoes = req.body.observacoes;
+    }
 
-    // id_department
     if (req.body.id_department) {
       const department = await Department.findByPk(req.body.id_department);
-      if (!department)
+      if (!department) {
         return res.status(400).json({
           success: false,
           msg: `Department ${req.body.id_department} not found`,
         });
+      }
 
       ticket.id_department = req.body.id_department;
     }
 
-    // id_state
     if (req.body.id_state) {
       const state = await State.findByPk(req.body.id_state);
-      if (!state)
+      if (!state) {
         return res.status(400).json({
           success: false,
           msg: `State ${req.body.id_state} not found`,
         });
+      }
 
       ticket.id_state = req.body.id_state;
     }
 
-    // updated_by
     ticket.updated_by = req.loggedUser.id;
 
     await ticket.save();
@@ -265,19 +261,15 @@ exports.edit = async (req, res) => {
 
 exports.delete = async (req, res) => {
   try {
-    if (req.loggedUser.admin == false)
-      return res.status(403).json({ error: "You do not have permission" });
+    if (!checkAdminPermission(req, res)) return;
 
     let ticket = await Ticket.findByPk(req.params.ticketId, {
       attributes: {
         exclude: excludeAttributes,
       },
     });
-    if (ticket == undefined || ticket == null)
-      return res.status(404).json({
-        sucess: false,
-        msg: `Ticket ${req.params.ticketId} not found`,
-      });
+
+    notFound(req, res, ticket, req.params.ticketId);
 
     Ticket.destroy({
       where: { id: req.params.ticketId },
