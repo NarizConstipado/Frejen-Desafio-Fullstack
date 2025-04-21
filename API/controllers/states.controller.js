@@ -4,6 +4,7 @@ const {
   checkAdminPermission,
   notFound,
   badRequest,
+  isValid,
 } = require("../utilities/validation");
 
 exports.findAll = async (req, res) => {
@@ -25,7 +26,6 @@ exports.findOneById = async (req, res) => {
 
     res.status(200).json(state);
   } catch (err) {
-    console.log(err);
     res.status(500).json({
       sucess: false,
       msg:
@@ -64,7 +64,7 @@ exports.edit = async (req, res) => {
 
     isValid(req, res, req.body?.title, "title", "string");
 
-    await State.update(req.body, { where: { id: state.id } });
+    await state.update(req.body);
     res.status(200).json({ msg: `State ${state.id} updated successfully` });
   } catch (err) {
     res.status(500).json({
@@ -83,7 +83,7 @@ exports.delete = async (req, res) => {
     const state = await State.findByPk(req.params.stateId);
     notFound(req, res, state, req.params.stateId);
 
-    await state.destroy({ where: { id: req.params.stateId } });
+    await state.destroy();
     res.status(200).json({
       msg: `State ${req.params.stateId} deleted successfully`,
     });

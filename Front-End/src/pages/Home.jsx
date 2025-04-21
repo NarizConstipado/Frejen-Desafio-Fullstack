@@ -68,7 +68,6 @@ function Home() {
       (entries) => {
         const entry = entries[0];
         if (entry.isIntersecting && !loading && !loadingMore && hasMore) {
-          console.log("Intersecting - fetching next page");
           setLoadingMore(true);
           getInfo();
         }

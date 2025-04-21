@@ -4,6 +4,7 @@ const {
   checkAdminPermission,
   notFound,
   badRequest,
+  isValid,
 } = require("../utilities/validation");
 
 exports.findAll = async (req, res) => {
@@ -11,7 +12,6 @@ exports.findAll = async (req, res) => {
     let result = await Department.findAll();
     res.status(200).json(result);
   } catch (err) {
-    console.log(err);
     res.status(500).json({
       sucess: false,
       msg: err.message || "Some error occurred while finding departments.",
@@ -25,7 +25,6 @@ exports.findOneById = async (req, res) => {
     notFound(req, res, department, req.params.departmentId);
     res.status(200).json(department);
   } catch (err) {
-    console.log(err);
     res.status(500).json({
       sucess: false,
       msg:
@@ -39,11 +38,7 @@ exports.create = async (req, res) => {
   try {
     if (!checkAdminPermission(req, res)) return;
 
-    if (!req.body.title) {
-      res.status(400).json({ error: "title is required" });
-    } else if (typeof req.body.title != "string") {
-      return res.status(400).json({ error: "title must be a string" });
-    }
+    badRequest(req, res, req.body.title, "title", "string");
 
     let newDepartment = await Department.create(req.body);
     res.status(201).json({
@@ -52,8 +47,7 @@ exports.create = async (req, res) => {
       URL: `/departments/${newDepartment.id}`,
     });
   } catch (err) {
-    console.log(err);
-    return res.status(500).json({
+    res.status(500).json({
       sucess: false,
       msg:
         err.message || "Some error occurred while creating a new department.",
@@ -70,7 +64,7 @@ exports.edit = async (req, res) => {
 
     isValid(req, res, req.body?.title, "title", "string");
 
-    await Department.update(req.body, { where: { id: department.id } });
+    await department.update(req.body);
     res
       .status(200)
       .json({ msg: `Department ${department.id} updated successfully` });
@@ -91,7 +85,7 @@ exports.delete = async (req, res) => {
     const department = await Department.findByPk(req.params.departmentId);
     notFound(req, res, department, req.params.departmentId);
 
-    await department.destroy({ where: { id: req.params.departmentId } });
+    await department.destroy();
     res.status(200).json({
       msg: `Department ${req.params.departmentId} deleted successfully`,
     });

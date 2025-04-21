@@ -2,7 +2,6 @@ import axios from "axios";
 
 const API_BASE_URL = "http://127.0.0.1:3000";
 
-// Utility function for axios requests
 const makeRequest = async (method, url, data = {}, params = {}) => {
   try {
     const token = localStorage.getItem("token");
@@ -79,7 +78,7 @@ export const getTickets = async ({ page, limit, search, id_state }) => {
   return makeRequest("get", url);
 };
 
-// GET: Get Tickets
+// GET: Get TicketById
 export const getTicket = async (id) => {
   const url = `${API_BASE_URL}/tickets/${id}`;
   return makeRequest("get", url);

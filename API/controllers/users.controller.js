@@ -138,7 +138,7 @@ exports.create = async (req, res) => {
 exports.edit = async (req, res) => {
   try {
     if (
-      req.loggedUser.admin == false ||
+      req.loggedUser.admin == false &&
       req.loggedUser.id != req.params.userId
     ) {
       return res.status(403).json({ error: "You do not have permission" });
@@ -190,9 +190,7 @@ exports.delete = async (req, res) => {
     let user = await User.findByPk(req.params.userId);
     notFound(req, res, user, req.params.userId);
 
-    User.destroy({
-      where: { id: req.params.userId },
-    });
+    await user.destroy();
 
     res.status(200).json({
       sucess: true,

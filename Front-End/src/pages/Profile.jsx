@@ -16,12 +16,14 @@ function Perfil() {
     password: "",
   });
   const token = localStorage.getItem("token");
-  // Display required for user name not being updated as the user is writing
-  const [displayName, setDisplayName] = useState("");
+
   const [departments, setDepartments] = useState([]);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Display required for user name not being updated as the user is writing
+  const [displayName, setDisplayName] = useState("");
 
   const getInfo = async () => {
     if (loading) {

@@ -15,7 +15,6 @@ exports.verifyToken = (req, res, next) => {
     };
     next();
   } catch (err) {
-    console.log(err);
     return res.status(500).json({
       success: false,
       msg: err.message || "Failed to authenticate token.",

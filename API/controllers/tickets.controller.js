@@ -59,7 +59,7 @@ exports.findByUser = async (req, res) => {
       offset: page * limit,
       limit,
       attributes: {
-        exclude: [excludeAttributes, "description", "obeservacoes"],
+        exclude: [...excludeAttributes, "description", "obeservacoes"],
       },
       include: [
         { model: Department, attributes: departmentAttributes },
@@ -271,9 +271,7 @@ exports.delete = async (req, res) => {
 
     notFound(req, res, ticket, req.params.ticketId);
 
-    Ticket.destroy({
-      where: { id: req.params.ticketId },
-    });
+    await ticket.destroy();
 
     res.status(200).json({
       sucess: true,
